@@ -107,10 +107,23 @@ Normally you do the same for `aminoacids.hdb` (hydrogen data base). But as you c
 So now I can successfully perform `pdb2gmx` because GROMACS is no longer trying to look for a residue that doesn't exist! Yipee!
 
 It's not magic. Turns out there's a lot of extra work you have to do by yourself.
-<!-- 
-* Links you used today (websites, videos, etc)
-* Things you tried, progress you made, etc
-* Challenges, a-ha moments, etc
-* Questions you still have
-* What you're going to try next
--->
+
+### 10/20/24
+
+and btw these models can be visualized with vmd and stuff but im too lazy to attach images hahahahaha
+
+ok cool i have the residue now. so there's a few neat things you can do with the gro file.
+
+First you can pretty much clone the molecule that's inside of it with the `insert-molecules` command:
+
+`gmx insert-molecules -ci ethane.gro -o ethane_box.gro -nmol 10-box 3 3 3`
+
+You should probably do this before generating the topology though.
+
+sooo what this basically does is insert 10 of the same molecules in the gro file into a 3 by 3 by 3 dimension. 3 what? bananas? idk either
+
+water is a solvent. you probably knew that. but nobody wants to insert a bunch of water molecules manually. that's why you can do this:
+
+`gmx solvate -cp ethane_box.gro -cs spc216.gro -p topol.top`
+
+so yeah just shove a bunch of spc216 water molecules into the box we just made yay thats it
