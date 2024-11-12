@@ -127,3 +127,29 @@ water is a solvent. you probably knew that. but nobody wants to insert a bunch o
 `gmx solvate -cp ethane_box.gro -cs spc216.gro -p topol.top`
 
 so yeah just shove a bunch of spc216 water molecules into the box we just made yay thats it
+
+### 11/11/24
+
+before i do anything with this cool system of ethane and water i have to run energy minimization. so pretty much get the molecules into their ideal positions so that no unexpected results come from further analysis.
+
+First a `min.mdp` file. Idk what each parameter does I just include the basics
+
+```
+integrator = steep
+nsteps = 50000
+nstxout = 100
+```
+
+According to this tutorial I read steep just means move molecules according to their forces until an energy criteria is reached. Seems about right to me
+
+Then I gotta run this command which does... something idk
+
+`gmx grompp -f min.mdp -c ethane_box.gro -p topol.top -o min -pp min -po min`
+
+Then run the mdrun
+
+`gmx mdrun -v -deffnm min`
+
+And now this is where my cool chemistry knowledge comes in because otherwise you wouldn't know if the results were fine or not. GROMACS tells u the max force and potential energy. If the potential energy is large and negative and the max force is also low, then it's fine because that means the forces are attractive and the distances between the molecules are as if the system is at equilibrium. woah.
+
+And also gromacs gives you a trr file to watch the cool animation on vmd
