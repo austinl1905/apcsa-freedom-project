@@ -153,3 +153,36 @@ Then run the mdrun
 And now this is where my cool chemistry knowledge comes in because otherwise you wouldn't know if the results were fine or not. GROMACS tells u the max force and potential energy. If the potential energy is large and negative and the max force is also low, then it's fine because that means the forces are attractive and the distances between the molecules are as if the system is at equilibrium. woah.
 
 And also gromacs gives you a trr file to watch the cool animation on vmd
+
+### 11/17/24
+
+Also gromacs gives you an xvg file with `gmx energy`. I downloaded xmgrace on the cli to see the file. It's pretty much just a graph of potential energy vs time (steps).
+
+The first equilibration to be performed is NVT. Constant moles (n), volume, and temperature. The point of this is to optimize the solute (ethane) with the solvent (water), bring the system to a desired temperature (usually high like 500 K), and increase the pressure until the system reaches the correct density of solute and solvent. I'm using the following file for this:
+
+```
+coulombtype = pme
+fourierspacing = 0.1
+pme-order = 4
+rcoulomb = 1.0
+vdw-type = Cut-off
+rvdw = 1.0
+constraint-algorithm = lincs
+constraints = hbonds
+continuation = no
+tcoupl = v-rescale
+tc-grps = system
+tau-t = 0.5 0.5
+ref-t = 360 360
+cutoff-scheme = Verlet
+nstlist = 10
+ns_type = grid
+gen-vel = yes
+gen-temp = 360
+comm_mode = linear
+comm_grps = system
+```
+
+Yeah idk what most of these parameters mean I'll figure it out.
+
+From the xvg file I created it looks like the system was not given enough time to stabilize the temperature. So I'll have to try again later.
