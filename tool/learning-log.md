@@ -186,3 +186,20 @@ comm_grps = system
 Yeah idk what most of these parameters mean I'll figure it out.
 
 From the xvg file I created it looks like the system was not given enough time to stabilize the temperature. So I'll have to try again later.
+
+### 11/24/24
+
+I screwed up somewhere because I accidentally used thewrong file for an input. I gotta have a better way of doing this. 
+
+Luckily, I don't need to start over completely. I already have my solvated system and residues, and generating the topology is as easy as a single command. oh yeah my property of interest is the interaction between nonpolar and polar molecules. I mean I'm already supposed to know what happens, but I'm doing this experiment to make sure I'm actually using gromacs properly.
+
+And oh yeah there's another way to create your "system". I used "insert-molecules" which is random, but you can also use "genconf", which will control where your molecules go and how many of them in a specific area (density). It's slower for minimization and equilibriation, but the complexity of my system isn't super high right now so it works great. Additionally it's easy to see the difference between the pre min and min files.
+
+When I use this command:
+
+`gmx genconf -f ethane.pdb -nbox 5 5 5 -o ethane_grid.pdb`
+
+I get a grid of 125 ethane molecules, but they're all in the same position, which isn't what I want. So I tried modifying the -dist argument:
+`gmx genconf -f ethane.pdb -nbox 5 5 5 -dist 1 1 1 -o ethane_grid.pdb`
+
+Now they're in a proper grid, but for some reason the carbon-carbon bond is missing. :/
