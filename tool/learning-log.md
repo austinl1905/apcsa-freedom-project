@@ -187,7 +187,7 @@ Yeah idk what most of these parameters mean I'll figure it out.
 
 From the xvg file I created it looks like the system was not given enough time to stabilize the temperature. So I'll have to try again later.
 
-### 11/24/24
+### 11/24/24 
 
 I screwed up somewhere because I accidentally used thewrong file for an input. I gotta have a better way of doing this. 
 
@@ -203,3 +203,9 @@ I get a grid of 125 ethane molecules, but they're all in the same position, whic
 `gmx genconf -f ethane.pdb -nbox 5 5 5 -dist 1 1 1 -o ethane_grid.pdb`
 
 Now they're in a proper grid, but for some reason the carbon-carbon bond is missing. :/
+
+### 12/1/24
+
+Restarted my simulations. I have to figure out how to solvate my system without the random positioning. Perhaps theres some sort of way to combine different coordinate files
+
+I mean, it's probably as simple as just copying and pasting the coordinates of the other file. Where the problem arises is making sure my "water" has the correct residue and model
