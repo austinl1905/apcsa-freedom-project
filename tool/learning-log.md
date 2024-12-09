@@ -212,7 +212,15 @@ I mean, it's probably as simple as just copying and pasting the coordinates of t
 
 I should probably learn more about the actual math that goes on when I run gromacs, since I'm planning to modify it (or adapt it) for my own personal use anyways.
 
-For my "experiment", I'm using non-bonded (intermolecular) interactions between uncharged molecules. Which are way easier to deal with, by the way. Bonded interactions would mean doing stuff with dihedrals and bond stretching potentials (I still don't know what those are)
+For my "experiment", I'm using non-bonded (which really means non-covalent) interactions between uncharged molecules. Which are way easier to deal with, by the way. Bonded interactions would mean doing stuff with dihedrals and bond stretching potentials (I still don't know what those are)
 
-Intermolecular interactions involve repulsive forces and dispersive (attractive) forces. Attractive forces includes the basic dipole-dipole, induced dipole, and LDFs. Repulsive forces include electron-electron interactions (Pauli exclusion principle. It's complicated.) Both of them can be combined into a single equation used to calculate the Lennard-Jones potential (in kj/mol). $$V(r)=4ϵ[(σr)12−(σr)6]$$
+Intermolecular interactions involve repulsive forces and dispersive (attractive) forces. Attractive forces includes the basic dipole-dipole, induced dipole, and LDFs. Repulsive forces include electron-electron interactions (Pauli exclusion principle. It's complicated.) Both of them can be combined into a single equation used to calculate the Lennard-Jones potential (in kj/mol): $$V(r)=4ϵ((\frac{σ}{r})^{12}−(\frac{σ}{r})^{6})$$
+
+Which produces a graph that looks very similar to a potential energy curve you might see in your chemistry class. At distance σ, the potential energy is at 0 (equal to the radius of the molecule). At the minimum potential energy (well depth) is the energy of the non-bonded interaction at equilibrium. A more negative well depth equates to a stronger interaction.
+
+The first term represents the repulsive forces at very short distances, while the second term represents the attractive forces at intermdiate distances.
+
+So that's what GROMACS is doing to make my molecule positions look nice and pretty. Cool.
+
+There's also Buckingham potential, which serves the same purpose but is more computationally expensive.
 
