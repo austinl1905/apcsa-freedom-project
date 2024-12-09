@@ -204,8 +204,15 @@ I get a grid of 125 ethane molecules, but they're all in the same position, whic
 
 Now they're in a proper grid, but for some reason the carbon-carbon bond is missing. :/
 
-### 12/1/24
+### 12/8/24
 
 Restarted my simulations. I have to figure out how to solvate my system without the random positioning. Perhaps theres some sort of way to combine different coordinate files
 
 I mean, it's probably as simple as just copying and pasting the coordinates of the other file. Where the problem arises is making sure my "water" has the correct residue and model
+
+I should probably learn more about the actual math that goes on when I run gromacs, since I'm planning to modify it (or adapt it) for my own personal use anyways.
+
+For my "experiment", I'm using non-bonded (intermolecular) interactions between uncharged molecules. Which are way easier to deal with, by the way. Bonded interactions would mean doing stuff with dihedrals and bond stretching potentials (I still don't know what those are)
+
+Intermolecular interactions involve repulsive forces and dispersive (attractive) forces. Attractive forces includes the basic dipole-dipole, induced dipole, and LDFs. Repulsive forces include electron-electron interactions (Pauli exclusion principle. It's complicated.) Both of them can be combined into a single equation used to calculate the Lennard-Jones potential (in kj/mol). $$V(r)=4ϵ[(σr)12−(σr)6]$$
+
