@@ -224,3 +224,8 @@ So that's what GROMACS is doing to make my molecule positions look nice and pret
 
 There's also Buckingham potential, which serves the same purpose but is more computationally expensive.
 
+### 1/5/25
+
+Having finally finished npt, I made the graph for both pressure and density (which are both related obviously)
+
+At first I was pretty confused because the pressure and density wildly fluctuated. I thought these were both supposed to stabilize bc it was, well, equilibrium. Normally in npt you expect a deviation in around the tens, but at certain points I was seeing 1 bar + up to 500 bars, so something was definitely wrong. I looked at the graphs for temperature, which was supposed to be constant. But it also fluctuates (yet the average seemed to be around 300K, which was expected). Nothing weird seemed to be happening with potential energy either. So I came to the conclusion these deviations were due to my relatively small system. It made sense, because in reality systems are much larger, but I only had a few thousand molecules (very little on a macro scale). So I'm just going to move on with the analysis, and in the worst case I'll just restart NPT. 
