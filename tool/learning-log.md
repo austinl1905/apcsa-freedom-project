@@ -229,3 +229,153 @@ There's also Buckingham potential, which serves the same purpose but is more com
 Having finally finished npt, I made the graph for both pressure and density (which are both related obviously)
 
 At first I was pretty confused because the pressure and density wildly fluctuated. I thought these were both supposed to stabilize bc it was, well, equilibrium. Normally in npt you expect a deviation in around the tens, but at certain points I was seeing 1 bar + up to 500 bars, so something was definitely wrong. I looked at the graphs for temperature, which was supposed to be constant. But it also fluctuates (yet the average seemed to be around 300K, which was expected). Nothing weird seemed to be happening with potential energy either. So I came to the conclusion these deviations were due to my relatively small system. It made sense, because in reality systems are much larger, but I only had a few thousand molecules (very little on a macro scale). So I'm just going to move on with the analysis, and in the worst case I'll just restart NPT. 
+
+### 1/12/25
+
+At this point I've realized my lack of motivation is probably due to the fact I haven't been coding. Like at all. So now I am. I'm going to use Fortran for writing coordinate files and analyzing data anwyays, so I gotta learn the basics, especially IO. And what better way to do so than implement my favorite sorting algorithm?
+
+So, I already know some fortran, but I'm not quite proficient. So doing this involved a lot of researching documentation (and admittedly a lot of chatgpt, but only for conceptual errors, I promise). Here's the runner code I got:
+```fortran
+PROGRAM MAIN
+    USE MERGE_SORT
+    IMPLICIT NONE
+    INTEGER, ALLOCATABLE :: ARR(:)
+
+    ALLOCATE(ARR(5))
+    ARR = [2, 7, 9, 0, -3]
+    PRINT *, SORT(ARR)
+
+END PROGRAM MAIN
+```
+
+It looks very stupid and ugly, because it is. IDK how to make it better. Also, I'm using SCREAMING_CAMEL_CASE because it makes me feel like those pioneering data scientists working on those really big computers
+
+The reason I made the array "allocatable" just to allocate space and give it elements is because my sort() function only takes in allocatable arrays. Arrays in fortran are fixed in size, so I can't just assume the array being passed is a certain size. There's probably a better way I don't know though.
+
+And then here's the actual thing:
+
+```fortran
+MODULE MERGE_SORT
+    IMPLICIT NONE
+CONTAINS
+    RECURSIVE FUNCTION SORT(ARR) RESULT(RES)
+        INTEGER, DIMENSION(:), ALLOCATABLE, INTENT(IN) :: ARR
+        INTEGER, DIMENSION(:), ALLOCATABLE :: LEFT, RIGHT, RES
+        INTEGER :: MIDPOINT
+
+        IF (SIZE(ARR).LE.1) THEN ! BASE CASE
+            RES = ARR
+            RETURN
+        END IF
+        
+        MIDPOINT = SIZE(ARR) / 2
+        ! ASSIGN SUBARRAYS
+        LEFT = ARR(1:MIDPOINT)
+        RIGHT = ARR(MIDPOINT + 1:SIZE(ARR))
+
+        ! GO BACK UP CALL STACK ONCE SIZE OF SUBARRAYS REACHES 1
+        LEFT = SORT(LEFT)
+        RIGHT = SORT(RIGHT)
+
+        ! MERGE ARRAYS IN ASCENDING ORDER AND GO UP CALL STACK AGAIN
+        RES = MERGE_ARRAYS(LEFT, RIGHT)
+        RETURN
+    END FUNCTION
+
+    FUNCTION MERGE_ARRAYS(LEFT, RIGHT) RESULT(RES)
+        INTEGER, DIMENSION(:), ALLOCATABLE :: LEFT, RIGHT, RES
+        INTEGER :: LI, RI, I ! ITERATION VARIABLES FOR SUBARRAYS AND OUTPUT
+
+        LI = 1
+        RI = 1
+        I = 1
+        ALLOCATE(RES(SIZE(LEFT) + SIZE(RIGHT)))
+
+        DO WHILE (LI.LE.SIZE(LEFT).AND.RI.LE.SIZE(RIGHT)) ! ADD SMALLER ELEMENTS TO OUTPUT
+            IF (LEFT(LI).LT.RIGHT(RI)) THEN
+                RES(I) = LEFT(LI)
+                I = I + 1
+                LI = LI +  1
+            ELSE
+                RES(I) = RIGHT(RI)
+                I = I + 1
+                RI = RI + 1
+            END IF
+        END DO
+
+        ! ADD REMAINING ELEMENTS TO OUTPUT
+        DO WHILE (LI.LE.SIZE(LEFT))
+            RES(I) = LEFT(LI)
+            I = I + 1
+            LI = LI + 1
+        END DO
+
+        DO WHILE (RI.LE.SIZE(RIGHT))
+            RES(I) = RIGHT(RI)
+            I = I + 1
+            RI = RI + 1
+        END DO
+        RETURN
+    END FUNCTION
+END MODULE MERGE_SORT
+```
+
+Wow. At this point I know how to write merge sort in three different programming languages, so I'll just let the code speak for itself and explain some of the quirks of the language. 
+
+Recursive functions need to be explicitly declared as recursive. For simpler data types such as integers, the return type can be included before the function name, like in other programming languages. But for some reason you can't do that with arrays. So in the function header, you need an additional result() variable.
+
+Also, the type of a variable is not determined in the parameters. it's declared in the function body and initialized separately. No such method or property that returns size exists for arrays: you must use an intrinsic function instead. Why? I don't know either. It's confusing too, because Fortran supports OOP.
+
+Splicing arrays is one of the more straightforward features of fortran. For example, ARR(1, 4) returns an array from index 1 to index 4, inclusive. Oh, arrays also use 1-based indexing by default, but the lower bound for an array can be designated as 0 if you wish. So one small thing I had to remember is that iterators should start at 1 and the condition to stop should be <=, not <. Also, no compound assignment or increment/decrement operators. HUH????
+
+The good thing about already knowing one programming language is that all I really need to do is figure out the syntax (however, fortran does some things very differently from other languages). Compare this to my java implementation:
+
+```java
+public static void sortTransactionsByAmount(ArrayList<Transaction> transactions)
+{   if (transactions.size() <= 1) // To prevent sorting arrays further than necessary
+   {   return;   } // Returns to parent call, not the first call.
+
+   int midpoint = transactions.size() / 2;
+   // subList() returns List, so I need to wrap it
+   ArrayList<Transaction> leftArray = new ArrayList<>(transactions.subList(0, midpoint));
+   ArrayList<Transaction> rightArray = new ArrayList<>(transactions.subList(midpoint, transactions.size()));
+
+   // Recursively divide subarrays
+   sortTransactionsByAmount(leftArray);
+   sortTransactionsByAmount(rightArray);
+
+   // Pass subarrays "up" the call stack to be merged
+   ArrayList<Transaction> sortedTransactions = mergeTransactionsByAmount(leftArray, rightArray);
+   transactions.clear();
+   transactions.addAll(sortedTransactions); // Since merge sort doesn't work in place, the sorted array has to be copied to the original.
+}
+
+private static ArrayList<Transaction> mergeTransactionsByAmount(ArrayList<Transaction> leftArray, ArrayList<Transaction> rightArray)
+{   ArrayList<Transaction> transactions = new ArrayList<Transaction>();
+   int leftIndex = 0;
+   int rightIndex = 0;
+
+   while (leftIndex < leftArray.size() && rightIndex < rightArray.size())
+   {   if(leftArray.get(leftIndex).getAmount() < rightArray.get(rightIndex).getAmount())
+       {   transactions.add(leftArray.get(leftIndex));
+           leftIndex++;
+       } else 
+       {   transactions.add(rightArray.get(rightIndex));
+           rightIndex++;
+       }
+   }
+
+   while (leftIndex < leftArray.size())
+   {   transactions.add(leftArray.get(leftIndex));
+       leftIndex++;
+   }
+
+   while (rightIndex < rightArray.size())
+   {   transactions.add(rightArray.get(rightIndex));
+       rightIndex++;
+   }
+
+   return transactions;
+}
+```
+Cool stuff! File I/O next. maybe. if I can figure out how to actually use this language I think It will pay off.
