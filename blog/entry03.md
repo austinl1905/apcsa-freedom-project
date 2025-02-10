@@ -1,5 +1,5 @@
 # Entry 3
-##### X/X/XX
+##### 2/9/25
 
 My two goals were to get acquainted with the Fortran language and learn how to do file I/O (which is actually the first time I've done this).
 
