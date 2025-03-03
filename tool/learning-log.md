@@ -379,3 +379,68 @@ private static ArrayList<Transaction> mergeTransactionsByAmount(ArrayList<Transa
 }
 ```
 Cool stuff! File I/O next. maybe. if I can figure out how to actually use this language I think It will pay off.
+
+3/2/25
+
+im making the md sim all by myself. because i want to CODE
+
+anyways i kind of got the hang of io. You have to read the file and then you can parse it into lines and stuff. Then you can use fortran formatting to get the information you want
+
+```fortran
+PROGRAM INOUT
+    IMPLICIT NONE
+    REAL :: X, Y, Z
+    INTEGER :: LINE_NUM, I
+    CHARACTER(LEN = 80) LINE ! PDB FILES ARE NO MORE THAN 80 COLUMNS PER LINE
+
+    LINE_NUM = 4
+    
+    OPEN(UNIT=10, FILE='ammonia.pdb', STATUS='OLD', ACTION='READ')
+
+    DO I = 1, LINE_NUM
+        READ(10, '(A)') LINE ! READ ENTIRE LINE
+    
+
+        READ(LINE(31:38), '(F8.3)') X ! EXPECT 3 FP DIGITS
+        READ(LINE(39:46), '(F8.3)') Y ! EXPECT 3 FP DIGITS
+        READ(LINE(47:54), '(F8.3)') Z ! EXPECT 3 FP DIGITS
+
+        PRINT *, X, Y, Z
+    END DO
+
+    CLOSE(10)
+
+END PROGRAM INOUT
+```
+
+this just reads the first line though. If you want to read all of the lines you can do this
+
+```
+OPEN(UNIT=10, FILE=F, IOSTAT=IOS, STATUS='OLD', ACTION='READ')
+
+DO
+ READ(10, '(A)', IOSTAT=IOS) LINE
+ IF (IOS.NE.0) THEN
+     EXIT
+ END IF
+ READ(LINE(1:6), '(A6)') STR
+ IF (STR.EQ.'ATOM  '.OR.STR.EQ.'HETATM') THEN
+     N = N + 1
+ END IF
+END DO
+
+ALLOCATE(C(N))
+REWIND(10)
+
+DO I = 1, N
+ READ(10, '(A)', IOSTAT=IOS) LINE
+ READ(LINE(31:38), '(F8.3)') C(I)%X ! EXPECT 3 FP DIGITS
+ READ(LINE(39:46), '(F8.3)') C(I)%Y ! EXPECT 3 FP DIGITS
+ READ(LINE(47:54), '(F8.3)') C(I)%Z ! EXPECT 3 FP DIGITS
+ PRINT *, C(I)%X
+ PRINT *, C(I)%Y
+ PRINT *, C(I)%Z
+END DO
+```
+
+great stuff! lennard-jones potential is next maybe
