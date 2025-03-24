@@ -444,3 +444,29 @@ END DO
 ```
 
 great stuff! lennard-jones potential is next maybe
+
+### 3/23/25
+
+I tried to add this code for reflecting boundary conditions.doesn't quite work though
+
+```
+SUBROUTINE REFLECT(R, V)
+   REAL, DIMENSION(N, D) :: R, V
+   INTEGER :: COL, ROW
+       DO COL = 0, SIZE(R, DIM = 2)
+           DO ROW = 0, SIZE(R, DIM = 1)
+               IF (R(ROW, COL).LT.0) THEN 
+                   V(ROW,COL) = -V(ROW, COL)
+                   R(ROW, COL) = -R(ROW, COL)
+               END IF
+               IF (R(ROW, COL).GT.100) THEN
+                   V(ROW, COL) = -V(ROW, COL)
+                   R(ROW, COL) = (2.0 * 100) - R(ROW, COL)
+               END IF
+           END DO
+       END DO
+   RETURN
+END
+```
+
+When a particle reaches a boundary it sort of just floats around there. I gotta figure that out. it seems like the velocity is staying the same but the position goes past 0 or 100.
