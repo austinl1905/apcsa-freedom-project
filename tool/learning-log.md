@@ -470,3 +470,70 @@ END
 ```
 
 When a particle reaches a boundary it sort of just floats around there. I gotta figure that out. it seems like the velocity is staying the same but the position goes past 0 or 100.
+
+### 4/1/25
+
+Added a dump for my simulation:
+
+```fortran
+SUBROUTINE DUMP(R, T, I)
+   CHARACTER(LEN = 20) :: FILENAME
+   REAL, DIMENSION(N, D) :: R
+   REAL :: T
+   INTEGER :: I, J, K
+
+   WRITE(FILENAME, '(A, I0, A)') 'dump/data', I, '.txt'
+
+   OPEN(1, FILE=FILENAME, STATUS = 'new')
+
+   WRITE(1, *) "ITEM: STEP"
+   WRITE(1, '(I10)') I
+   WRITE(1, *) "ITEM: DT"
+   WRITE(1, '(F5.2)') DT
+   WRITE(1, *) "ITEM: TIME"
+   WRITE(1, '(F5.2)') T
+   WRITE(1, *) "ITEM: N ATOMS"
+   WRITE(1, '(I10)') N
+   WRITE(1, *) "ITEM: BOX CONDITION"
+
+   IF (BC) THEN 
+       WRITE(1, *) "PERIODIC"
+   ELSE 
+       WRITE(1, *) "REFLECTIVE"
+   END IF
+
+   WRITE(1, *) "ITEM: BOX BOUNDS (CUBE)"
+   WRITE(1, '(F5.3, A, F7.3)') 0.00, " ", L
+
+   WRITE(1, *) "ITEM: X Y Z"
+   
+   DO J = 1, N
+       WRITE(1, '(F10.6, F10.6, F10.6)') R(J, 1), R(J, 2), R(J, 3)
+   END DO
+
+   CLOSE(1)
+END
+```
+
+It outputs data into a txt file for each step of the simulation:
+```
+ ITEM: STEP
+        17
+ ITEM: DT
+ 0.01
+ ITEM: TIME
+ 0.17
+ ITEM: N ATOMS
+         5
+ ITEM: BOX CONDITION
+ REFLECTIVE
+ ITEM: BOX BOUNDS (CUBE)
+0.000 100.000
+ ITEM: X Y Z
+ 54.986469 26.970545 23.766037
+ 65.483910 59.547302 98.639061
+ 79.378143 76.269287 32.916183
+ 69.127960 20.604038 81.038292
+  7.952033 20.709009 53.371666
+```
+I can then use this data for when I make my 3D engine later.
