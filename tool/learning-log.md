@@ -537,3 +537,72 @@ It outputs data into a txt file for each step of the simulation:
   7.952033 20.709009 53.371666
 ```
 I can then use this data for when I make my 3D engine later.
+
+### 4/6/25
+
+progress was made check this out
+
+```fortran
+SUBROUTINE REFLECT(R, V)
+   REAL, DIMENSION(N, D) :: R, V
+   INTEGER :: COL, ROW
+       DO COL = 0, SIZE(R, DIM = 2)
+           DO ROW = 0, SIZE(R, DIM = 1)
+               IF (R(ROW, COL).LT.0) THEN 
+                   V(ROW,COL) = -V(ROW, COL)
+                   R(ROW, COL) = -R(ROW, COL) ! REFLECT POSITION ABOUT 0
+               END IF
+               IF (R(ROW, COL).GT.L) THEN
+                   V(ROW, COL) = -V(ROW, COL)
+                   R(ROW, COL) = (2.0 * L) - R(ROW, COL) ! REFLECT POSITION ABOUT L
+               END IF
+           END DO
+       END DO
+   RETURN
+END
+```
+
+This is the WORKING code for my RBC. As it turns out fortran does weird stuff when you call functions from subroutines and whatnot. I figured that since subroutines are essentially "void functions" it would be easier to do this since I have defined a velocity and position array. But for potential energy I can still use a function like so:
+
+```fortran
+FUNCTION LJPOT(R, A) RESULT(LJP) ! SUM OF POTENTIAL ENERGY BETWEEN MOLECULES
+   REAL, DIMENSION(N, D) :: R, DRV ! POSITION, POTENTIAL ENERGY, DISPLACEMENT VECTOR (FOR EACH DIMENSION AND ATOM)
+   REAL, DIMENSION(N - 1, D) :: NDRV ! DISPLACEMENT? VECTOR (WITHOUT ITH ATOM)
+   REAL, DIMENSION(N - 1) :: DR ! DISTANCE BETWEEN NTH ATOM AND ITH ATOM
+   REAL :: LJP
+   INTEGER :: A, NEW_ROW, I
+
+   NEW_ROW = 1
+   LJP = 0
+
+   DO I = 1, N ! CALCULATE COMPONENT WISE DISTANCE VECTORS. EX: IF ATOM K HAS POSITION VECTOR (1, 2, 3) AND ATOM L HAS POSITION VECTOR (5, 4, 2) THEN THE RESULTING VECTOR IS (4, 2, -1). THIS VECTOR CAN THEN BE USED FOR EUCLIDEAN DISTANCE CALCULATION.
+       DRV(I, :) = R(I, :) - R(A, :)
+   END DO
+
+   DO I = 1, N 
+       IF (I.EQ.A) THEN ! EXCLUDE ITH ATOM
+           CYCLE
+       END IF
+       NDRV(NEW_ROW, :) = DRV(I, :)
+       NEW_ROW = NEW_ROW + 1
+   END DO
+
+   DO I = 1, N - 1 ! CALCULATE EUCLIDEAN DISTANCE FOR EACH ATOM (ASSUMING D = 3)
+       DR(I) = SQRT(NDRV(I, 1)**2 + NDRV(I, 2)**2 + NDRV(I, 3)**2)
+   END DO
+
+   DO I = N, N - 1 ! CALCULATE LENNARD-JONES POTENTIAL
+       LJP = LJP + (4.00 * EPS * (((SIG/DR(I))**12)-((SIG/DR(I))**6))) ! REPLACE WITH SUM FUNCTION LATER
+   END DO
+
+RETURN
+END
+```
+
+Right now it returns 0 no matter what but trust the vision (im pretty sure its the last part I need to fix)
+
+$$U(r) = 4\\epsilon [(\\frac{\\sigma}{r})^{12} - (\\frac{\\sigma}{r})^{6}]$$
+
+This is the lennard jones potential. it's pairwise (meaning just between two atoms) but in a real simulation I need ALL of the interactions between every atom. Thus in the function I tried to make it a sum of those potential energy calculations.
+
+Basically, I needed to find the displacement vectors in order to calculate the distance (a scalar quantity). Also it's important to exclude the atom being passed (as the distance would just be 0) from there I just plug the numbers into the formula! Next is the derivative of lennard jones potential, the derivative of energy with respect to distance aka FORCE!!!
