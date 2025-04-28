@@ -193,9 +193,9 @@ END DO
 
 Since at r = 2.5, the energy is very small, subtracting it makes a negligible difference in the actual potential at the equilibrium point.
 
-The next thing I could do was use a better algorithm. At the moment, I was using Euler's method, which was a very simple but inaccurate way of calculating the trajectory of molecules. Even with a small time step like the one I use, this tends to diverge greatly from the original unknown path because it does not conserve energy, leading to high numerical instability.
+The next thing I could do was use a better algorithm. At the moment, I was using an algorithm I learned in AP Calculus (Euler method), which was a very simple but inaccurate way of calculating the trajectory of molecules. Even with a small time step like the one I use, this tends to diverge greatly from the original unknown path because it does not conserve energy, leading to high numerical instability.
 
-Velocity-verlet on the other hand is much better at conserving energy and in turn calculating the trajectories. I don't really know why, it just does. Anyways, it's just as easy to implement:
+[Velocity-verlet](https://tonypaxton.org/Notes/MD.pdf) on the other hand is much better at conserving energy and in turn calculating the trajectories. I don't really know why, it just does (common theme here hahaha). Anyways, it's pretty easy to implement:
 
 ```fortran
 SUBROUTINE VEL_VERLET(R, V, A) ! EULER BUT BETTER
@@ -223,6 +223,63 @@ SUBROUTINE VEL_VERLET(R, V, A) ! EULER BUT BETTER
     RETURN
 END
 ```
+
+Next I wanted to add temperature. At the moment my particles start with randomized velocities that are only adjusted based on the minimal interactions between them. Being able to slow down the particles would make these interactions linger for longer since the kinetic energy of the molecules will no longer exceed that force of attraction. Adding a desired temperature to the system would require a mean of adjusting the velocity to get closer to that temperature. 
+
+For now I'll use the easiest algorithm, which is the [velocity rescaling thermostat](https://www.compchems.com/thermostats-in-molecular-dynamics/#velocity-rescaling). How it works is depending on the kinetic energy of the particles (which is proportional to the square of speed) a scalar (lambda) is used to either increase or decrease the velocity. This scalar is obtained by taking the square root of the target temperature divided by the current temperature:
+
+$$
+K_e = \frac{1}{2}\sum_i m_iv_i^2
+$$
+$$
+v_i^{new} = v_i^{old} \cdot \lambda
+$$
+$$
+\lambda =   \sqrt{\frac{T_{des}}{T(t)}}
+$$
+
+I can't be bothered to write LaTex so here's the equations from the article I referred to.
+
+Which looks like this in my implementation:
+```fortran
+! SIMPLE VELOCITY RESCALING. WILL FIGURE OUT A BETTER THERMOSTAT LATER
+SUBROUTINE RESCALE_V(V)
+    REAL :: LAMB, CURRENT_T, KE, AVKE
+    REAL, DIMENSION(N, D), INTENT(INOUT) :: V
+    INTEGER :: I
+
+    CURRENT_T = GET_T(V)
+
+    LAMB = SQRT(T/CURRENT_T)
+    V = V * LAMB
+    RETURN
+END
+
+REAL FUNCTION GET_T(V) ! HELPER FUNCTION BECAUSE I WANT T IN MY DUMP FILES TOO
+    REAL :: KE, AVKE, LAMB
+    REAL, DIMENSION(N, D) :: V
+    INTEGER :: I
+    
+    KE = 0
+
+    ! IM SORRY BUT I CAN NEVER GET USED TO FORTRAN ARRAY OPERATIONS
+    DO I = 1, N
+        KE = KE + SUM(V(I,:)**2) * M
+    END DO
+
+    KE = KE * 0.5
+    AVKE = KE / N
+    GET_T = (2.0/3.0) * AVKE/KB
+    RETURN
+END
+```
+At the moment it's turning everything into NaN for some reason. You get the idea though.
+
+So that's pretty much all I have for now.
+
+I'm currently at step 5 of the Engineering Design Process. At this point I've gotten down the very basics of MD, but there I still many things I want to add in order to optimize and expand upon my simulation.
+
+The skills I'm developing are problem decomposition and creativity. Molecular Dynamics is mostly several different concepts in chemistry/physics that are stitched together to create a cohesive simulation, so it's important that I learn each one separately before trying to combine them together. Additionally, making this simulation has required me to think about these problems from the perspective of a chemist or mathematician rather than a programmer, especially since I'm dealing with actual equations where I can't just rely on the gimmicks of a library or other tool (I don't regret learning Fortran though. Even then these simulations take a LONGGG time). I had to figure out how to implement them in a way that was mathematically accurate and actually made sense to me.
 
 [Previous](entry04.md) | [Next](entry06.md)
 
