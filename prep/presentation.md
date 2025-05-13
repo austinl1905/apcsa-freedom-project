@@ -1,16 +1,18 @@
 # Presentation Plan
 
 ## Hook
-* 
+* TBD
 
 ## Product
-* 
+* Video demo of project
 
 ## Process
-* 
+* Basics: Euler integration, temperature control (Velocity rescaling), intermolecular interactions (LJ Potential), text output
+  * Optimizations: Velocity verlet, andersen thermostat, NPT ensemble, 3d visualization
+* Snippets of equations, graphs, code
 
 ## Conclusion
-* 
+* Don't underestimate the difficulty of a project - there were many other things that I wanted to add but implementing the most important parts took too long for me.
 
 <!-- EXAMPLE
 
